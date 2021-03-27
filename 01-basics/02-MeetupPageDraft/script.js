@@ -12,7 +12,7 @@ const MEETUP_ID = 6;
  * @return {string} - ссылка на изображение митапа
  */
 function getMeetupCoverLink(meetup) {
-  return `${API_URL}/images/${meetup.imageId}`;
+  return `${API_URL}/images/${meetup?.imageId}`;
 }
 
 /**
@@ -48,19 +48,49 @@ export const app = new Vue({
   el: '#app',
 
   data: {
-    //
+    meetupData: null,
+    agendaItemIcons,
+    agendaItemTitles,
+    getMeetupCoverLink,
   },
 
   mounted() {
-    // Требуется получить данные митапа с API
+    this.fetchMeetupData();
   },
 
   computed: {
-    //
+    isAgendaEmpty() {
+      return this.meetupData?.agenda.length <= 0;
+    },
+
+    meetupCoverImage() {
+      return {
+        '--bg-url': `url('${this.getMeetupCoverLink(this.meetupData)}')`,
+      };
+    },
   },
 
   methods: {
-    // Получение данных с API предпочтительнее оформить отдельным методом,
-    // а не писать прямо в mounted()
+    async fetchMeetupData() {
+      const response = await fetch(`${API_URL}/meetups/${MEETUP_ID}`);
+
+      this.meetupData = await response.json();
+    },
+
+    getMeetupLocaleDate(datestamp) {
+      const date = new Date(datestamp);
+
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      };
+
+      return date.toLocaleString('ru', options);
+    },
+
+    getAgendaIconName(type) {
+      return this.agendaItemIcons[type];
+    },
   },
 });
