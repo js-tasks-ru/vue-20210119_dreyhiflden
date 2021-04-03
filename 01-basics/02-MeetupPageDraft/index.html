@@ -10,25 +10,25 @@
 </head>
 <body>
 <div id="app">
-  <div>
+  <div v-if="meetupData">
     <div class="meetup-cover" :style='meetupCoverImage'>
-      <h1 class="meetup-cover__title">{{ meetupData.title }}</h1>
+      <h1 class="meetup-cover__title">{{ meetupRecord.title }}</h1>
     </div>
 
     <div class="container">
       <div class="meetup">
         <div class="meetup__content">
           <h3>Описание</h3>
-          <p class="meetup-description">{{ meetupData.description }}</p>
+          <p class="meetup-description">{{ meetupRecord.description }}</p>
 
           <h3>Программа</h3>
           <div class="meetup-agenda">
             <p v-if='isAgendaEmpty' class="meetup-agenda__empty">
               Программа пока пуста, но когда-нибудь в ней обязательно что-нибудь появится!
             </p>
-            <div v-else v-for='agenda in meetupData.agenda' :key='agenda.id' class='meetup-agenda__item'>
+            <div v-else v-for='agenda in meetupRecord.agendaList' :key='agenda.id' class='meetup-agenda__item'>
               <div class="meetup-agenda__item-col">
-                <img class="icon" alt="icon" :src="`/assets/icons/icon-${getAgendaIconName(agenda.type)}.svg`" />
+                <img class="icon" alt="icon" :src="agenda.iconSrc" />
               </div>
               <div class="meetup-agenda__item-col">{{ agenda.startsAt }} - {{ agenda.endsAt }}</div>
               <div class="meetup-agenda__item-col">
@@ -48,21 +48,22 @@
           <ul class="info-list">
             <li>
               <img class="icon info-list__icon" alt="icon" src="/assets/icons/icon-user.svg" />
-              {{ meetupData.organizer }}
+              {{ meetupRecord.organizer }}
             </li>
             <li>
               <img class="icon info-list__icon" alt="icon" src="/assets/icons/icon-map.svg" />
-              {{ meetupData.place }}
+              {{ meetupRecord.place }}
             </li>
             <li>
               <img class="icon info-list__icon" alt="icon" src="/assets/icons/icon-cal-lg.svg" />
-              <time datetime="2020-02-31">{{ getMeetupLocaleDate(meetupData.date) }}</time>
+              <time :datetime="meetupRecord.dateISO">{{ meetupRecord.localeDate }}</time>
             </li>
           </ul>
         </div>
       </div>
     </div>
   </div>
+  <div v-else>Данные загружаются...</div>
 </div>
 
 <script type="module" src="script.js"></script>

@@ -4,7 +4,7 @@ import Vue from './vue.esm.browser.js';
 const API_URL = 'https://course-vue.javascript.ru/api';
 
 /** ID митапа для примера; используйте его при получении митапа */
-const MEETUP_ID = 6;
+const MEETUP_ID = 1;
 
 /**
  * Возвращает ссылку на изображение митапа для митапа
@@ -51,7 +51,6 @@ export const app = new Vue({
     meetupData: null,
     agendaItemIcons,
     agendaItemTitles,
-    getMeetupCoverLink,
   },
 
   mounted() {
@@ -60,12 +59,43 @@ export const app = new Vue({
 
   computed: {
     isAgendaEmpty() {
-      return this.meetupData?.agenda.length <= 0;
+      return this.meetupRecord?.agendaList.length <= 0;
     },
 
     meetupCoverImage() {
+      const defaultCover = {
+        '--bg-url': 'var(--default-cover)',
+      };
+      const meetupCover = {
+        '--bg-url': `url('${getMeetupCoverLink(this.meetupRecord)}')`,
+      };
+
+      return this.meetupRecord.coverImageId === null
+        ? defaultCover
+        : meetupCover;
+    },
+
+    meetupRecord() {
+      if (this.meetupData.length) return;
+
+      const agendaList = this.meetupData.agenda.map((agenda) => {
+        return {
+          ...agenda,
+          iconSrc: `/assets/icons/icon-${agendaItemIcons[agenda.type]}.svg`,
+          title: agenda.title || agendaItemTitles[agenda.type],
+        };
+      });
+
+      const coverImageId = this.meetupData.imageId ?? null;
+      const localeDate = this.getMeetupLocaleDate(this.meetupData.date);
+      const dateISO = new Date(this.meetupData.date).toISOString();
+
       return {
-        '--bg-url': `url('${this.getMeetupCoverLink(this.meetupData)}')`,
+        ...this.meetupData,
+        coverImageId,
+        localeDate,
+        dateISO,
+        agendaList,
       };
     },
   },
@@ -86,11 +116,7 @@ export const app = new Vue({
         day: 'numeric',
       };
 
-      return date.toLocaleString('ru', options);
-    },
-
-    getAgendaIconName(type) {
-      return this.agendaItemIcons[type];
+      return date.toLocaleString(navigator.language, options);
     },
   },
 });
