@@ -4,7 +4,7 @@ import Vue from './vue.esm.browser.js';
 const API_URL = 'https://course-vue.javascript.ru/api';
 
 /** ID митапа для примера; используйте его при получении митапа */
-const MEETUP_ID = 6;
+const MEETUP_ID = 1;
 
 /**
  * Возвращает ссылку на изображение митапа для митапа
@@ -12,7 +12,7 @@ const MEETUP_ID = 6;
  * @return {string} - ссылка на изображение митапа
  */
 function getMeetupCoverLink(meetup) {
-  return `${API_URL}/images/${meetup.imageId}`;
+  return `${API_URL}/images/${meetup?.imageId}`;
 }
 
 /**
@@ -48,19 +48,75 @@ export const app = new Vue({
   el: '#app',
 
   data: {
-    //
+    meetupData: null,
+    agendaItemIcons,
+    agendaItemTitles,
   },
 
   mounted() {
-    // Требуется получить данные митапа с API
+    this.fetchMeetupData();
   },
 
   computed: {
-    //
+    isAgendaEmpty() {
+      return this.meetupRecord?.agendaList.length <= 0;
+    },
+
+    meetupCoverImage() {
+      const defaultCover = {
+        '--bg-url': 'var(--default-cover)',
+      };
+      const meetupCover = {
+        '--bg-url': `url('${getMeetupCoverLink(this.meetupRecord)}')`,
+      };
+
+      return this.meetupRecord.coverImageId === null
+        ? defaultCover
+        : meetupCover;
+    },
+
+    meetupRecord() {
+      if (this.meetupData.length) return;
+
+      const agendaList = this.meetupData.agenda.map((agenda) => {
+        return {
+          ...agenda,
+          iconSrc: `/assets/icons/icon-${agendaItemIcons[agenda.type]}.svg`,
+          title: agenda.title || agendaItemTitles[agenda.type],
+        };
+      });
+
+      const coverImageId = this.meetupData.imageId ?? null;
+      const localeDate = this.getMeetupLocaleDate(this.meetupData.date);
+      const dateISO = new Date(this.meetupData.date).toISOString();
+
+      return {
+        ...this.meetupData,
+        coverImageId,
+        localeDate,
+        dateISO,
+        agendaList,
+      };
+    },
   },
 
   methods: {
-    // Получение данных с API предпочтительнее оформить отдельным методом,
-    // а не писать прямо в mounted()
+    async fetchMeetupData() {
+      const response = await fetch(`${API_URL}/meetups/${MEETUP_ID}`);
+
+      this.meetupData = await response.json();
+    },
+
+    getMeetupLocaleDate(datestamp) {
+      const date = new Date(datestamp);
+
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      };
+
+      return date.toLocaleString(navigator.language, options);
+    },
   },
 });
