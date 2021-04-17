@@ -1,5 +1,5 @@
 export const CounterButton = {
-  template: '<button type="button" @click="onClick()">{{ value }}</button>',
+  template: '<button type="button" @click="onClick()">{{ count }}</button>',
 
   model: {
     prop: 'count',
@@ -13,15 +13,9 @@ export const CounterButton = {
     },
   },
 
-  data() {
-    return {
-      value: this.count,
-    };
-  },
-
   methods: {
     onClick() {
-      this.$emit('increment', ++this.value);
+      this.$emit('increment', this.count + 1);
     },
   },
 };
